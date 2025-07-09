@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="가족과 함께하는 마음의 여행 - 우리 가족 마음 탐험대">
+    <meta name="keywords" content="가족, 감정, 교육, 상담">
+    <meta property="og:title" content="우리 가족 마음 탐험대">
+    <meta property="og:description" content="가족 사진을 보며 감정과 생각을 탐색하는 교육 도구">
+    <meta property="og:type" content="website">
+    <title>우리 가족 마음 탐험대</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #dbeafe 0%, #faf5ff 50%, #fce7f3 100%);
+        }
+
+        .progress-gradient {
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        /* 폰트 최적화 */
+        body, * {
+            font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 한글 텍스트 최적화 */
+        .korean-text {
+            word-break: keep-all;
+            line-height: 1.7;
+            letter-spacing: -0.02em;
+        }
+
+        /* 결과 화면 전용 스타일 */
+        #resultDiv {
+            font-size: 15px !important;
+            line-height: 1.7 !important;
+        }
+
+        #resultDiv * {
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
+            hyphens: none !important;
+        }
+
+        #resultDiv p {
+            margin: 0 !important;
+            padding: 0 !important;
+            white-space: pre-wrap !important;
+        }
+
+        /* 애니메이션 개선 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 스크롤바 스타일 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 이미지 드래그 방지 */
+        img {
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* 텍스트 선택 방지 (결과 영역 제외) */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* 고해상도 디스플레이 최적화 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            #resultDiv {
+                font-size: 16px !important;
+            }
+        }
+
+        /* 성공 애니메이션 */
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .celebrate {
+            animation: celebration 0.6s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg p-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-2">우리 가족 마음 탐험대</h1>
+            <p class="text-gray-600">가족과 함께하는 마음의 여행</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-lg p-4 mb-6 shadow-md no-print">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-600">진행 상황</span>
+                    <button id="resetBtn" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="처음부터 다시 시작하기" aria-label="다시 시작">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                    <button id="saveBtn" class="p-1 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded transition-colors" title="진행 상황 저장" aria-label="저장">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
+                    </button>
+                </div>
+                <span id="progressText" class="text-sm font-medium text-gray-600">1/9</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="progressBar" class="progress-gradient h-3 rounded-full transition-all duration-300" style="width: 11.11%"></div>
+            </div>
+            <div class="text-center mt-2">
+                <span id="stepTitle" class="text-lg font-medium text-gray-700">시작하기</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="bg-white rounded-xl p-6 md:p-8 shadow-lg min-h-[400px]">
+            <div id="stepContent" class="fade-in">
+                <!-- 동적 콘텐츠가 여기에 렌더링됩니다 -->
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="flex justify-between mt-6 no-print" role="navigation">
+            <button id="prevBtn" class="flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-gray-200 text-gray-400 cursor-not-allowed" aria-label="이전 단계">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span class="hidden sm:inline">이전</span>
+            </button>
+
+            <button id="nextBtn" class="flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-gray-200 text-gray-400 cursor-not-allowed" aria-label="다음 단계">
+                <span class="hidden sm:inline">다음</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </nav>
+
+        <!-- Helpful message -->
+        <div id="helpMessage" class="text-center mt-4 hidden">
+            <p class="text-orange-600 bg-orange-50 px-4 py-2 rounded-lg inline-block">
+                📝 모든 내용을 작성해야 다음 단계로 갈 수 있어요
+            </p>
+        </div>
+
+        <!-- Auto-save indicator -->
+        <div id="saveIndicator" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden">
+            ✓ 자동 저장됨
+        </div>
+
+        <!-- Debug info (개발용) -->
+        <div id="debugInfo" class="fixed bottom-4 left-4 bg-gray-800 text-white text-xs p-2 rounded hidden">
+            <div>단계: <span id="debugStep">0</span></div>
+            <div>진행 가능: <span id="debugCanProceed">false</span></div>
+            <div>현재 값: <span id="debugValue">""</span></div>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="mt-4 text-gray-700">처리 중...</p>
+        </div>
+    </div>
+
+    <script>
+        // 전역 상태 관리
+        const appState = {
+            currentStep: 0,
+            studentName: '',
+            familyImage: null,
+            seeAnswers: '',
+            thinkAnswers: '',
+            wonderAnswers: '',
+            emotions: [],
+            myStory: '',
+            reflection: '',
+            lastSaved: null
+        };
+
+        const steps = [
+            '시작하기',
+            '가족 사진',
+            'See 보기',
+            'Think 생각하기',
+            'Wonder 궁금하기',
+            '감정 표현하기',
+            '나의 이야기',
+            '성찰하기',
+            '완성!'
+        ];
+
+        const emotionOptions = [
+            { emoji: '😊', name: '행복해요', color: 'bg-yellow-200' },
+            { emoji: '😢', name: '슬퍼요', color: 'bg-blue-200' },
+            { emoji: '😠', name: '화나요', color: 'bg-red-200' },
+            { emoji: '😰', name: '걱정돼요', color: 'bg-gray-200' },
+            { emoji: '🥰', name: '사랑해요', color: 'bg-pink-200' },
+            { emoji: '😴', name: '편안해요', color: 'bg-green-200' },
+            { emoji: '😤', name: '답답해요', color: 'bg-orange-200' },
+            { emoji: '🤗', name: '따뜻해요', color: 'bg-purple-200' }
+        ];
+
+        // DOM 요소들
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const stepTitle = document.getElementById('stepTitle');
+        const stepContent = document.getElementById('stepContent');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const helpMessage = document.getElementById('helpMessage');
+        const resetBtn = document.getElementById('resetBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const fileInput = document.getElementById('fileInput');
+        const saveIndicator = document.getElementById('saveIndicator');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // 디버그 요소들 (개발용)
+        const debugInfo = document.getElementById('debugInfo');
+        const debugStep = document.getElementById('debugStep');
+        const debugCanProceed = document.getElementById('debugCanProceed');
+        const debugValue = document.getElementById('debugValue');
+
+        // 로컬 스토리지 키
+        const STORAGE_KEY = 'familyEmotionExplorer';
+
+        // 디버그 모드 (개발용 - 실제 배포시에는 false로 설정)
+        const DEBUG_MODE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+        // 초기화
+        function init() {
+            loadFromLocalStorage();
+            updateUI();
+            renderStep();
+
+            // 디버그 모드 활성화
+            if (DEBUG_MODE) {
+                debugInfo.classList.remove('hidden');
+                console.log('🐛 Debug mode activated');
+            }
+
+            // 이벤트 리스너 등록
+            prevBtn.addEventListener('click', prevStep);
+            nextBtn.addEventListener('click', nextStep);
+            resetBtn.addEventListener('click', resetAll);
+            saveBtn.addEventListener('click', saveToLocalStorage);
+            fileInput.addEventListener('change', handleImageUpload);
+
+            // 키보드 네비게이션
+            document.addEventListener('keydown', handleKeyboard);
+
+            // 자동 저장
+            setInterval(autoSave, 30000); // 30초마다 자동 저장
+        }
+
+        // 디버그 정보 업데이트
+        function updateDebugInfo() {
+            if (DEBUG_MODE) {
+                debugStep.textContent = appState.currentStep;
+                debugCanProceed.textContent = canProceed();
+                
+                let currentValue = '';
+                switch (appState.currentStep) {
+                    case 0: currentValue = appState.studentName; break;
+                    case 1: currentValue = appState.familyImage ? 'uploaded' : 'not uploaded'; break;
+                    case 2: currentValue = appState.seeAnswers; break;
+                    case 3: currentValue = appState.thinkAnswers; break;
+                    case 4: currentValue = appState.wonderAnswers; break;
+                    case 5: currentValue = appState.emotions.length + ' emotions'; break;
+                    case 6: currentValue = appState.myStory; break;
+                    case 7: currentValue = appState.reflection; break;
+                    default: currentValue = 'completed';
+                }
+                debugValue.textContent = `"${currentValue}"`;
+            }
+        }
+
+        // 키보드 네비게이션
+        function handleKeyboard(e) {
+            if (e.altKey) {
+                if (e.key === 'ArrowLeft' && !prevBtn.disabled) {
+                    prevStep();
+                } else if (e.key === 'ArrowRight' && !nextBtn.disabled) {
+                    nextStep();
+                }
+            }
+        }
+
+        // 로컬 스토리지에서 불러오기
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    Object.assign(appState, data);
+                }
+            } catch (error) {
+                console.error('Failed to load saved data:', error);
+            }
+        }
+
+        // 로컬 스토리지에 저장
+        function saveToLocalStorage() {
+            try {
+                appState.lastSaved = new Date().toISOString();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                showSaveIndicator();
+            } catch (error) {
+                console.error('Failed to save data:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 자동 저장
+        function autoSave() {
+            if (appState.studentName || appState.currentStep > 0) {
+                saveToLocalStorage();
+            }
+        }
+
+        // 저장 표시
+        function showSaveIndicator() {
+            saveIndicator.classList.remove('hidden');
+            setTimeout(() => {
+                saveIndicator.classList.add('hidden');
+            }, 2000);
+        }
+
+        // 로딩 표시 (개선된 메시지)
+        function showLoading(show = true, message = '처리 중...') {
+            const loadingText = document.querySelector('#loadingOverlay p');
+            if (show) {
+                if (loadingText) loadingText.textContent = message;
+                loadingOverlay.classList.remove('hidden');
+            } else {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        // UI 업데이트 (개선된 버전)
+        function updateUI() {
+            const progress = ((appState.currentStep + 1) / steps.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${appState.currentStep + 1}/${steps.length}`;
+            stepTitle.textContent = steps[appState.currentStep];
+
+            // 네비게이션 버튼 상태 업데이트
+            prevBtn.disabled = appState.currentStep === 0;
+            prevBtn.className = appState.currentStep === 0
+                ? "flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-gray-500 text-white hover:bg-gray-600";
+
+            const canProceedValue = canProceed();
+            nextBtn.disabled = appState.currentStep === steps.length - 1 || !canProceedValue;
+            nextBtn.className = appState.currentStep === steps.length - 1 || !canProceedValue
+                ? "flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "flex items-center px-4 md:px-6 py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600";
+
+            // 도움말 메시지
+            helpMessage.className = !canProceedValue && appState.currentStep < steps.length - 1
+                ? "text-center mt-4"
+                : "text-center mt-4 hidden";
+
+            // 디버그 정보 업데이트
+            updateDebugInfo();
+
+            // 로그 출력 (디버그 모드에서만)
+            if (DEBUG_MODE) {
+                console.log(`🔄 UI Updated - Step: ${appState.currentStep}, Can proceed: ${canProceedValue}`);
+            }
+        }
+
+        // 진행 가능 여부 확인
+        function canProceed() {
+            switch (appState.currentStep) {
+                case 0: return appState.studentName.trim() !== '';
+                case 1: return appState.familyImage !== null;
+                case 2: return appState.seeAnswers.trim() !== '';
+                case 3: return appState.thinkAnswers.trim() !== '';
+                case 4: return appState.wonderAnswers.trim() !== '';
+                case 5: return appState.emotions.length > 0;
+                case 6: return appState.myStory.trim() !== '';
+                case 7: return appState.reflection.trim() !== '';
+                default: return true;
+            }
+        }
+
+        // 새로운 탐험 시작 함수
+        function startNewExploration() {
+            if (confirm('새로운 가족 마음 탐험을 시작하시겠어요?\n\n현재 결과는 저장하고 새로운 탐험을 시작합니다.')) {
+                // 현재 결과 백업
+                const backup = JSON.stringify({
+                    ...appState,
+                    timestamp: new Date().toISOString(),
+                    backupReason: 'new_exploration'
+                });
+                
+                try {
+                    localStorage.setItem(`${STORAGE_KEY}_backup_${Date.now()}`, backup);
+                } catch (error) {
+                    console.warn('백업 저장 실패:', error);
+                }
+                
+                // 상태 초기화
+                Object.assign(appState, {
+                    currentStep: 0,
+                    studentName: '',
+                    familyImage: null,
+                    seeAnswers: '',
+                    thinkAnswers: '',
+                    wonderAnswers: '',
+                    emotions: [],
+                    myStory: '',
+                    reflection: '',
+                    lastSaved: null
+                });
+                
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+                renderStep();
+                
+                // 성공 메시지
+                setTimeout(() => {
+                    alert('🚀 새로운 가족 마음 탐험을 시작합니다!\n\n이전 결과는 안전하게 백업되었어요.');
+                }, 500);
+                
+                if (DEBUG_MODE) {
+                    console.log('🆕 Started new exploration');
+                }
+            }
+        }
+
+        // 단계별 렌더링 (개선된 애니메이션)
+        function renderStep() {
+            // 애니메이션 클래스 제거 후 재적용
+            stepContent.classList.remove('fade-in');
+            
+            let content = '';
+
+            switch (appState.currentStep) {
+                case 0:
+                    content = `
+                        <div class="text-center space-y-6">
+                            <div class="text-6xl mb-4">👨‍👩‍👧‍👦</div>
+                            <h2 class="text-2xl md:text-3xl font-bold text-blue-600 mb-4">우리 가족 마음 탐험대</h2>
+                            <p class="text-base md:text-lg text-gray-700 mb-6">가족과 함께하는 마음의 여행을 떠나볼까요?</p>
+                            <input
+                                type="text"
+                                id="studentNameInput"
+                                placeholder="내 이름을 적어주세요"
+                                value="${appState.studentName}"
+                                class="w-full max-w-md mx-auto p-4 text-lg md:text-xl border-2 border-blue-300 rounded-xl focus:border-blue-500 outline-none"
+                                aria-label="학생 이름"
+                                autocomplete="name"
+                            />
+                            ${appState.lastSaved ? `
+                                <p class="text-sm text-gray-500 mt-4">
+                                    마지막 저장: ${new Date(appState.lastSaved).toLocaleString('ko-KR')}
+                                </p>
+                            ` : ''}
+                        </div>
+                    `;
+                    break;
+
+                case 1:
+                    content = `
+                        <div class="text-center space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-blue-600 mb-4">
+                                📷 우리 가족 사진을 보여주세요
+                            </h2>
+                            ${!appState.familyImage ? `
+                                <div id="uploadArea" class="w-full max-w-md mx-auto h-64 border-4 border-dashed border-blue-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
+                                    <div class="text-5xl text-blue-400 mb-2">📤</div>
+                                    <p class="text-lg text-blue-600">사진을 선택해주세요</p>
+                                    <p class="text-sm text-gray-500">또는 여기를 눌러주세요</p>
+                                    <p class="text-xs text-gray-400 mt-2">드래그 앤 드롭도 가능합니다</p>
+                                </div>
+                            ` : `
+                                <div class="space-y-4">
+                                    <img src="${appState.familyImage}" alt="가족 사진" class="w-full max-w-md mx-auto rounded-xl shadow-lg">
+                                    <button id="changeImageBtn" class="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
+                                        다른 사진 선택하기
+                                    </button>
+                                </div>
+                            `}
+                            <p class="text-sm text-gray-500">
+                                지원 형식: JPG, PNG, GIF (최대 10MB)
+                            </p>
+                        </div>
+                    `;
+                    break;
+
+                case 2:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-green-600 text-center mb-4">
+                                👀 SEE - 무엇이 보이나요?
+                            </h2>
+                            ${appState.familyImage ? `
+                                <img src="${appState.familyImage}" alt="가족 사진" class="w-full max-w-sm mx-auto rounded-xl shadow-lg mb-4">
+                            ` : ''}
+                            <div class="bg-green-50 p-4 rounded-xl">
+                                <p class="text-base md:text-lg mb-3 text-green-700">사진에서 보이는 것들을 적어주세요:</p>
+                                <textarea
+                                    id="seeAnswersInput"
+                                    placeholder="예: 엄마, 아빠, 나, 동생이 보여요. 모두 웃고 있어요."
+                                    class="w-full h-32 p-3 border-2 border-green-200 rounded-lg focus:border-green-400 outline-none resize-none text-base md:text-lg"
+                                    aria-label="보이는 것 설명"
+                                >${appState.seeAnswers}</textarea>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    팁: 사람, 표정, 배경, 옷차림 등을 자세히 관찰해보세요
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 3:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-orange-600 text-center mb-4">
+                                🤔 THINK - 어떤 생각이 드나요?
+                            </h2>
+                            ${appState.familyImage ? `
+                                <img src="${appState.familyImage}" alt="가족 사진" class="w-full max-w-sm mx-auto rounded-xl shadow-lg mb-4">
+                            ` : ''}
+                            <div class="bg-orange-50 p-4 rounded-xl">
+                                <p class="text-base md:text-lg mb-3 text-orange-700">이 사진을 보며 드는 생각을 적어주세요:</p>
+                                <textarea
+                                    id="thinkAnswersInput"
+                                    placeholder="예: 우리 가족이 행복해 보여요. 함께 있어서 좋을 것 같아요."
+                                    class="w-full h-32 p-3 border-2 border-orange-200 rounded-lg focus:border-orange-400 outline-none resize-none text-base md:text-lg"
+                                    aria-label="생각 설명"
+                                >${appState.thinkAnswers}</textarea>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    팁: 이 순간의 분위기나 느낌을 떠올려보세요
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 4:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-purple-600 text-center mb-4">
+                                ❓ WONDER - 무엇이 궁금한가요?
+                            </h2>
+                            ${appState.familyImage ? `
+                                <img src="${appState.familyImage}" alt="가족 사진" class="w-full max-w-sm mx-auto rounded-xl shadow-lg mb-4">
+                            ` : ''}
+                            <div class="bg-purple-50 p-4 rounded-xl">
+                                <p class="text-base md:text-lg mb-3 text-purple-700">이 사진을 보며 궁금한 것을 적어주세요:</p>
+                                <textarea
+                                    id="wonderAnswersInput"
+                                    placeholder="예: 이때 우리가 뭘 하고 있었을까? 다른 가족들은 어떨까?"
+                                    class="w-full h-32 p-3 border-2 border-purple-200 rounded-lg focus:border-purple-400 outline-none resize-none text-base md:text-lg"
+                                    aria-label="궁금한 점"
+                                >${appState.wonderAnswers}</textarea>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    팁: 사진 속 상황이나 가족들의 마음에 대해 궁금한 점을 생각해보세요
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 5:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-pink-600 text-center mb-4">
+                                💝 가족과 함께 있을 때 어떤 기분인가요?
+                            </h2>
+                            <p class="text-center text-gray-600">느끼는 감정을 모두 선택해주세요 (여러 개 선택 가능)</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
+                                ${emotionOptions.map((emotion, index) => {
+                                    const isSelected = appState.emotions.find(e => e.name === emotion.name);
+                                    return `
+                                        <button
+                                            data-emotion='${JSON.stringify(emotion)}'
+                                            class="emotion-btn p-3 md:p-4 rounded-xl border-2 transition-all ${
+                                                isSelected
+                                                    ? `${emotion.color} border-pink-400 scale-105`
+                                                    : 'bg-white border-gray-200 hover:border-pink-200'
+                                            }"
+                                            aria-pressed="${isSelected ? 'true' : 'false'}"
+                                            aria-label="감정 선택: ${emotion.name}"
+                                        >
+                                            <div class="text-2xl md:text-3xl mb-2">${emotion.emoji}</div>
+                                            <div class="text-sm font-medium">${emotion.name}</div>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                            ${appState.emotions.length > 0 ? `
+                                <div class="text-center mt-4">
+                                    <p class="text-pink-600 font-medium">선택한 감정:</p>
+                                    <div class="flex flex-wrap justify-center gap-2 mt-2">
+                                        ${appState.emotions.map(emotion => `
+                                            <span class="px-3 py-1 rounded-full ${emotion.color} text-sm">
+                                                ${emotion.emoji} ${emotion.name}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    break;
+
+                case 6:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-indigo-600 text-center mb-4">
+                                👥 가족 속에서 나는 누구일까요?
+                            </h2>
+                            <div class="bg-indigo-50 p-4 rounded-xl">
+                                <p class="text-base md:text-lg mb-3 text-indigo-700">우리 가족에서 나는 어떤 사람인지 소개해주세요:</p>
+                                <textarea
+                                    id="myStoryInput"
+                                    placeholder="예: 나는 우리 가족의 막내예요. 가족들을 웃게 만드는 것을 좋아해요. 가족과 함께 있을 때 가장 행복해요."
+                                    class="w-full h-40 p-3 border-2 border-indigo-200 rounded-lg focus:border-indigo-400 outline-none resize-none text-base md:text-lg"
+                                    aria-label="나의 이야기"
+                                >${appState.myStory}</textarea>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    팁: 가족 안에서의 나의 역할, 특별한 점, 좋아하는 것들을 생각해보세요
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 7:
+                    content = `
+                        <div class="space-y-6">
+                            <h2 class="text-xl md:text-2xl font-bold text-emerald-600 text-center mb-4">
+                                ⭐ 오늘 배운 것을 생각해볼까요?
+                            </h2>
+                            <div class="bg-emerald-50 p-4 rounded-xl">
+                                <p class="text-base md:text-lg mb-3 text-emerald-700">
+                                    "가족 관계에서 나는 어떤 모습일까?"를 생각하며 오늘 느낀 점을 적어주세요:
+                                </p>
+                                <textarea
+                                    id="reflectionInput"
+                                    placeholder="예: 가족과 함께 있을 때 내가 얼마나 특별한 사람인지 알게 되었어요."
+                                    class="w-full h-32 p-3 border-2 border-emerald-200 rounded-lg focus:border-emerald-400 outline-none resize-none text-base md:text-lg"
+                                    aria-label="성찰 내용"
+                                >${appState.reflection}</textarea>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    팁: 오늘 발견한 새로운 점이나 감사한 마음을 표현해보세요
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 8:
+                    content = `
+                        <div class="text-center space-y-6">
+                            <div class="text-6xl mb-4 celebrate">🎉</div>
+                            <h2 class="text-2xl md:text-3xl font-bold text-blue-600 mb-4">완성되었어요!</h2>
+                            <div id="resultDiv" class="bg-blue-50 p-6 rounded-xl max-w-3xl mx-auto text-left" style="min-height: auto; font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif; line-height: 1.6;">
+                                <h3 class="text-xl font-bold text-blue-800 text-center mb-6" style="word-break: keep-all;">${appState.studentName}님의 가족 마음 탐험 결과</h3>
+                                
+                                ${appState.familyImage ? `
+                                    <div class="mb-6 text-center">
+                                        <img src="${appState.familyImage}" alt="가족 사진" class="max-w-xs mx-auto rounded-lg shadow-md" style="max-height: 200px; object-fit: contain;">
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="space-y-5">
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-green-700 mb-3 text-lg" style="word-break: keep-all;">👀 보인 것:</h4>
+                                        <p class="text-gray-800 leading-relaxed" style="word-break: keep-all; white-space: pre-wrap; font-size: 15px;">${appState.seeAnswers}</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-orange-700 mb-3 text-lg" style="word-break: keep-all;">🤔 생각한 것:</h4>
+                                        <p class="text-gray-800 leading-relaxed" style="word-break: keep-all; white-space: pre-wrap; font-size: 15px;">${appState.thinkAnswers}</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-purple-700 mb-3 text-lg" style="word-break: keep-all;">❓ 궁금한 것:</h4>
+                                        <p class="text-gray-800 leading-relaxed" style="word-break: keep-all; white-space: pre-wrap; font-size: 15px;">${appState.wonderAnswers}</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-pink-700 mb-3 text-lg" style="word-break: keep-all;">💝 느낀 감정:</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${appState.emotions.map(emotion => `
+                                                <span class="px-3 py-2 rounded-full ${emotion.color} text-sm font-medium" style="white-space: nowrap; word-break: keep-all;">
+                                                    ${emotion.emoji} ${emotion.name}
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-indigo-700 mb-3 text-lg" style="word-break: keep-all;">👥 나의 이야기:</h4>
+                                        <p class="text-gray-800 leading-relaxed" style="word-break: keep-all; white-space: pre-wrap; font-size: 15px;">${appState.myStory}</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                                        <h4 class="font-bold text-emerald-700 mb-3 text-lg" style="word-break: keep-all;">⭐ 오늘의 깨달음:</h4>
+                                        <p class="text-gray-800 leading-relaxed" style="word-break: keep-all; white-space: pre-wrap; font-size: 15px;">${appState.reflection}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-4 border-t border-blue-200 text-center">
+                                    <p class="text-sm text-blue-600" style="font-size: 13px;">📅 ${new Date().toLocaleDateString('ko-KR')} 생성</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4 no-print">
+                                <!-- 결과 관련 버튼들 -->
+                                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                    <button id="downloadBtn" class="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors font-medium flex items-center gap-2">
+                                        📥 이미지로 저장하기
+                                    </button>
+                                    <button id="printBtn" class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium">
+                                        🖨️ 결과 인쇄하기
+                                    </button>
+                                    <button id="shareBtn" class="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors font-medium">
+                                        📤 공유하기
+                                    </button>
+                                </div>
+                                
+                                <!-- 구분선 -->
+                                <div class="flex items-center my-6">
+                                    <div class="flex-1 border-t border-gray-300"></div>
+                                    <span class="px-4 text-gray-500 text-sm">다음 단계</span>
+                                    <div class="flex-1 border-t border-gray-300"></div>
+                                </div>
+                                
+                                <!-- 새로운 탐험 관련 버튼들 -->
+                                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                    <button id="newExplorationBtn" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-colors font-bold flex items-center gap-2 text-lg">
+                                        🚀 새로운 탐험 시작하기
+                                    </button>
+                                    <button id="resetAllBtn" class="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors font-medium flex items-center gap-2">
+                                        🔄 처음부터 다시 시작
+                                    </button>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <p class="text-sm text-gray-600">💡 <strong>새로운 탐험</strong>은 현재 결과를 백업하고 새로 시작하며,<br><strong>다시 시작</strong>은 모든 내용을 지우고 처음부터 시작합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            stepContent.innerHTML = content;
+            
+            // 애니메이션 효과를 위한 지연 후 클래스 추가
+            setTimeout(() => {
+                stepContent.classList.add('fade-in');
+            }, 10);
+            
+            attachStepEventListeners();
+        }
+
+        // 개선된 이벤트 리스너 함수
+        function addMultipleEventListeners(element, events, handler) {
+            events.forEach(event => {
+                element.addEventListener(event, handler);
+            });
+        }
+
+        // 단계별 이벤트 리스너 추가 (개선된 버전)
+        function attachStepEventListeners() {
+            switch (appState.currentStep) {
+                case 0:
+                    const nameInput = document.getElementById('studentNameInput');
+                    if (nameInput) {
+                        // 여러 이벤트 타입으로 실시간 감지
+                        addMultipleEventListeners(nameInput, ['input', 'paste', 'keyup'], (e) => {
+                            // 약간의 지연을 두어 입력 완료 후 처리
+                            setTimeout(() => {
+                                appState.studentName = e.target.value;
+                                updateUI();
+                                autoSave();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`📝 Name input: "${appState.studentName}"`);
+                                }
+                            }, 10);
+                        });
+                        nameInput.focus();
+                    }
+                    break;
+
+                case 1:
+                    const uploadArea = document.getElementById('uploadArea');
+                    const changeImageBtn = document.getElementById('changeImageBtn');
+
+                    if (uploadArea) {
+                        uploadArea.addEventListener('click', () => fileInput.click());
+                        uploadArea.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+                        });
+                        uploadArea.addEventListener('dragleave', () => {
+                            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+                        });
+                        uploadArea.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+                            const files = e.dataTransfer.files;
+                            if (files.length > 0) {
+                                handleImageFile(files[0]);
+                            }
+                        });
+                    }
+
+                    if (changeImageBtn) {
+                        changeImageBtn.addEventListener('click', () => fileInput.click());
+                    }
+                    break;
+
+                case 2:
+                    const seeInput = document.getElementById('seeAnswersInput');
+                    if (seeInput) {
+                        addMultipleEventListeners(seeInput, ['input', 'paste', 'keyup'], (e) => {
+                            setTimeout(() => {
+                                appState.seeAnswers = e.target.value;
+                                updateUI();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`👀 See input: "${appState.seeAnswers}"`);
+                                }
+                            }, 10);
+                        });
+                        seeInput.focus();
+                    }
+                    break;
+
+                case 3:
+                    const thinkInput = document.getElementById('thinkAnswersInput');
+                    if (thinkInput) {
+                        addMultipleEventListeners(thinkInput, ['input', 'paste', 'keyup'], (e) => {
+                            setTimeout(() => {
+                                appState.thinkAnswers = e.target.value;
+                                updateUI();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`🤔 Think input: "${appState.thinkAnswers}"`);
+                                }
+                            }, 10);
+                        });
+                        thinkInput.focus();
+                    }
+                    break;
+
+                case 4:
+                    const wonderInput = document.getElementById('wonderAnswersInput');
+                    if (wonderInput) {
+                        addMultipleEventListeners(wonderInput, ['input', 'paste', 'keyup'], (e) => {
+                            setTimeout(() => {
+                                appState.wonderAnswers = e.target.value;
+                                updateUI();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`❓ Wonder input: "${appState.wonderAnswers}"`);
+                                }
+                            }, 10);
+                        });
+                        wonderInput.focus();
+                    }
+                    break;
+
+                case 5:
+                    const emotionBtns = document.querySelectorAll('.emotion-btn');
+                    emotionBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const emotion = JSON.parse(btn.dataset.emotion);
+                            toggleEmotion(emotion);
+                            renderStep();
+                            updateUI();
+                            autoSave();
+                            
+                            if (DEBUG_MODE) {
+                                console.log(`💝 Emotion toggled: ${emotion.name}, Total: ${appState.emotions.length}`);
+                            }
+                        });
+                    });
+                    break;
+
+                case 6:
+                    const storyInput = document.getElementById('myStoryInput');
+                    if (storyInput) {
+                        addMultipleEventListeners(storyInput, ['input', 'paste', 'keyup'], (e) => {
+                            setTimeout(() => {
+                                appState.myStory = e.target.value;
+                                updateUI();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`👥 Story input: "${appState.myStory}"`);
+                                }
+                            }, 10);
+                        });
+                        storyInput.focus();
+                    }
+                    break;
+
+                case 7:
+                    const reflectionInput = document.getElementById('reflectionInput');
+                    if (reflectionInput) {
+                        addMultipleEventListeners(reflectionInput, ['input', 'paste', 'keyup'], (e) => {
+                            setTimeout(() => {
+                                appState.reflection = e.target.value;
+                                updateUI();
+                                
+                                if (DEBUG_MODE) {
+                                    console.log(`⭐ Reflection input: "${appState.reflection}"`);
+                                }
+                            }, 10);
+                        });
+                        reflectionInput.focus();
+                    }
+                    break;
+
+                case 8:
+                    const downloadBtn = document.getElementById('downloadBtn');
+                    const printBtn = document.getElementById('printBtn');
+                    const shareBtn = document.getElementById('shareBtn');
+                    const newExplorationBtn = document.getElementById('newExplorationBtn');
+                    const resetAllBtn = document.getElementById('resetAllBtn');
+
+                    if (downloadBtn) {
+                        downloadBtn.addEventListener('click', downloadAsImage);
+                    }
+
+                    if (printBtn) {
+                        printBtn.addEventListener('click', () => window.print());
+                    }
+
+                    if (shareBtn) {
+                        shareBtn.addEventListener('click', shareResult);
+                    }
+
+                    if (newExplorationBtn) {
+                        newExplorationBtn.addEventListener('click', startNewExploration);
+                    }
+
+                    if (resetAllBtn) {
+                        resetAllBtn.addEventListener('click', resetAll);
+                    }
+                    break;
+            }
+        }
+
+        // 감정 토글
+        function toggleEmotion(emotion) {
+            const existingIndex = appState.emotions.findIndex(e => e.name === emotion.name);
+            if (existingIndex >= 0) {
+                appState.emotions.splice(existingIndex, 1);
+            } else {
+                appState.emotions.push(emotion);
+            }
+        }
+
+        // 이미지 업로드 처리
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleImageFile(file);
+            }
+        }
+
+        // 이미지 파일 처리
+        function handleImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드할 수 있습니다.');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기는 10MB 이하여야 합니다.');
+                return;
+            }
+
+            showLoading();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // 이미지 리사이즈 (최대 800px)
+                        const maxSize = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
+                            }
+                        } else {
+                            if (height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        appState.familyImage = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        // 메모리 정리
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        canvas.width = canvas.height = 0;
+                        
+                        showLoading(false);
+                        renderStep();
+                        updateUI();
+                        autoSave();
+                        
+                        if (DEBUG_MODE) {
+                            console.log('📷 Image uploaded and processed');
+                        }
+                    } catch (error) {
+                        console.error('Image processing error:', error);
+                        alert('이미지 처리 중 오류가 발생했습니다.');
+                        showLoading(false);
+                    }
+                };
+                img.onerror = () => {
+                    alert('이미지를 불러올 수 없습니다.');
+                    showLoading(false);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 폰트 로딩 대기 함수
+        function waitForFonts() {
+            return new Promise((resolve) => {
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(resolve);
+                } else {
+                    // 폰트 API가 지원되지 않는 경우 짧은 지연
+                    setTimeout(resolve, 500);
+                }
+            });
+        }
+
+        // 안정적인 이미지 다운로드 함수
+        async function downloadAsImage() {
+            const resultDiv = document.getElementById('resultDiv');
+            if (!window.html2canvas || !resultDiv) {
+                alert('이미지 다운로드 기능을 준비 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            showLoading(true, '이미지 생성 중...');
+            
+            try {
+                // 폰트 로딩 완료 대기
+                await waitForFonts();
+                
+                // 레이아웃 안정화를 위한 짧은 대기
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // 안정적이면서도 좋은 품질의 설정
+                const canvas = await window.html2canvas(resultDiv, {
+                    backgroundColor: '#ffffff',
+                    scale: 2.5, // 적당한 고해상도
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    width: resultDiv.scrollWidth,
+                    height: resultDiv.scrollHeight,
+                    // 안정성을 위한 설정
+                    foreignObjectRendering: false, // 호환성 개선
+                    letterRendering: true, // 텍스트 품질 개선
+                    // 폰트 렌더링 최적화
+                    onclone: function(clonedDoc) {
+                        const style = clonedDoc.createElement('style');
+                        style.textContent = `
+                            * {
+                                font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif !important;
+                                -webkit-font-smoothing: antialiased !important;
+                                -moz-osx-font-smoothing: grayscale !important;
+                                word-break: keep-all !important;
+                                line-height: 1.6 !important;
+                            }
+                        `;
+                        clonedDoc.head.appendChild(style);
+                    }
+                });
+
+                // 파일명 생성
+                const sanitizedName = appState.studentName.replace(/[^\w\s-가-힣]/gi, '') || '가족마음탐험';
+                const timestamp = new Date().toLocaleDateString('ko-KR').replace(/\./g, '-');
+                
+                const link = document.createElement('a');
+                link.download = `${sanitizedName}_가족마음탐험결과_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 0.95); // 품질과 파일크기 균형
+                link.click();
+
+                // 메모리 정리
+                canvas.width = canvas.height = 0;
+                
+                if (DEBUG_MODE) {
+                    console.log('✅ Image downloaded successfully');
+                }
+
+                // 성공 메시지
+                setTimeout(() => {
+                    alert('🎉 이미지가 성공적으로 저장되었습니다!\n\n다운로드 폴더를 확인해보세요.');
+                }, 500);
+
+            } catch (error) {
+                console.error('Download error:', error);
+                
+                // 간단한 대체 방법으로 재시도
+                try {
+                    showLoading(true, '대체 방법으로 시도 중...');
+                    
+                    const canvas = await window.html2canvas(resultDiv, {
+                        backgroundColor: '#ffffff',
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+
+                    const sanitizedName = appState.studentName.replace(/[^\w\s-가-힣]/gi, '') || '가족마음탐험';
+                    const timestamp = new Date().toLocaleDateString('ko-KR').replace(/\./g, '-');
+                    
+                    const link = document.createElement('a');
+                    link.download = `${sanitizedName}_결과_${timestamp}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    canvas.width = canvas.height = 0;
+                    
+                    setTimeout(() => {
+                        alert('✅ 이미지가 저장되었습니다!');
+                    }, 300);
+
+                } catch (fallbackError) {
+                    console.error('Fallback download error:', fallbackError);
+                    alert('이미지 저장 중 오류가 발생했습니다.\n\n다음 방법을 시도해보세요:\n• 브라우저를 새로고침 후 다시 시도\n• 인쇄 기능 이용\n• 스크린샷 도구 사용');
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 결과 공유
+        function shareResult() {
+            const text = `${appState.studentName}님의 가족 마음 탐험 결과\n\n` +
+                `👀 보인 것: ${appState.seeAnswers}\n` +
+                `🤔 생각한 것: ${appState.thinkAnswers}\n` +
+                `❓ 궁금한 것: ${appState.wonderAnswers}\n` +
+                `💝 느낀 감정: ${appState.emotions.map(e => e.emoji + e.name).join(', ')}\n` +
+                `👥 나의 이야기: ${appState.myStory}\n` +
+                `⭐ 오늘의 깨달음: ${appState.reflection}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: '우리 가족 마음 탐험대',
+                    text: text
+                }).catch(err => {
+                    console.log('Share canceled:', err);
+                });
+            } else if (navigator.clipboard) {
+                // 클립보드에 복사
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('결과가 클립보드에 복사되었습니다!');
+                }).catch(() => {
+                    alert('공유 기능을 사용할 수 없습니다.');
+                });
+            } else {
+                alert('공유 기능을 사용할 수 없습니다.');
+            }
+        }
+
+        // 네비게이션 함수들
+        function nextStep() {
+            if (appState.currentStep < steps.length - 1 && canProceed()) {
+                appState.currentStep++;
+                updateUI();
+                renderStep();
+                autoSave();
+                
+                if (DEBUG_MODE) {
+                    console.log(`➡️ Moved to step ${appState.currentStep}`);
+                }
+            }
+        }
+
+        function prevStep() {
+            if (appState.currentStep > 0) {
+                appState.currentStep--;
+                updateUI();
+                renderStep();
+                
+                if (DEBUG_MODE) {
+                    console.log(`⬅️ Moved to step ${appState.currentStep}`);
+                }
+            }
+        }
+
+        // 초기화
+        function resetAll() {
+            if (confirm('정말로 처음부터 다시 시작하시겠어요? 지금까지 작성한 내용이 모두 사라집니다.')) {
+                Object.assign(appState, {
+                    currentStep: 0,
+                    studentName: '',
+                    familyImage: null,
+                    seeAnswers: '',
+                    thinkAnswers: '',
+                    wonderAnswers: '',
+                    emotions: [],
+                    myStory: '',
+                    reflection: '',
+                    lastSaved: null
+                });
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+                renderStep();
+                
+                if (DEBUG_MODE) {
+                    console.log('🔄 Application reset');
+                }
+            }
+        }
+
+        // 페이지 이탈 경고
+        window.addEventListener('beforeunload', (e) => {
+            if (appState.studentName && appState.currentStep > 0 && appState.currentStep < steps.length - 1) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // 앱 시작
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
